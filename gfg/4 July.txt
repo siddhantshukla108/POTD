@@ -1,0 +1,58 @@
+import java.util.*;
+
+class Solution {
+    class Fenwick {
+        int[] bit;
+
+        Fenwick(int n) {
+            bit = new int[n + 2];
+        }
+
+        void update(int idx, int val) {
+            while (idx < bit.length) {
+                bit[idx] += val;
+                idx += idx & -idx;
+            }
+        }
+
+        int query(int idx) {
+            int sum = 0;
+            while (idx > 0) {
+                sum += bit[idx];
+                idx -= idx & -idx;
+            }
+            return sum;
+        }
+    }
+
+    public int countSubstring(String s) {
+        int n = s.length();
+
+        int[] prefix = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
+            prefix[i] = prefix[i - 1] + (s.charAt(i - 1) == '1' ? 1 : -1);
+        }
+
+        int[] vals = prefix.clone();
+        Arrays.sort(vals);
+
+        Map<Integer, Integer> map = new HashMap<>();
+        int idx = 1;
+        for (int x : vals) {
+            if (!map.containsKey(x)) {
+                map.put(x, idx++);
+            }
+        }
+
+        Fenwick ft = new Fenwick(idx);
+        long ans = 0;
+
+        for (int x : prefix) {
+            int id = map.get(x);
+            ans += ft.query(id - 1);   // previous prefix sums < current
+            ft.update(id, 1);
+        }
+
+        return (int) ans;
+    }
+}
